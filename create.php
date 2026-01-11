@@ -1,50 +1,40 @@
-<?php 
-include('db.php'); 
-// Protect the page: Only logged-in users can add posts
-if(!isset($_SESSION['user'])) {
-    header("Location: login.php");
-    exit();
-}
-?>
+<?php include('db.php'); ?>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>Add Post | ApexPlanet</title>
+    <title>Create Post</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 card p-4 shadow-sm">
-                <h3 class="text-primary mb-4">Create New Blog Post</h3>
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        <input type="text" name="title" class="form-control" placeholder="Post Title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Content</label>
-                        <textarea name="content" class="form-control" rows="5" placeholder="Write your content here..." required></textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" name="add_post" class="btn btn-primary flex-grow-1">Publish</button>
-                        <a href="index.php" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+<body style="background-color: #f3f2ef;">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 card p-4 border-0 shadow">
+            <h4 class="mb-3">Create a Post</h4>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="text" name="title" class="form-control mb-3" placeholder="Title" required>
+                <textarea name="content" class="form-control mb-3" rows="4" placeholder="What do you want to talk about?" required></textarea>
+                <label class="form-label">Add a photo</label>
+                <input type="file" name="image" class="form-control mb-4" accept="image/*">
+                <button type="submit" name="post" class="btn btn-primary w-100 rounded-pill">Post</button>
+            </form>
         </div>
     </div>
-</body>
-</html>
+</div>
 
 <?php
-if(isset($_POST['add_post'])){
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $content = mysqli_real_escape_string($conn, $_POST['content']);
-    
-    $query = "INSERT INTO posts (title, content) VALUES ('$title', '$content')";
-    if(mysqli_query($conn, $query)){
-        echo "<script>alert('Post added successfully!'); window.location='index.php';</script>";
+if(isset($_POST['post'])){
+    $t = mysqli_real_escape_string($conn, $_POST['title']);
+    $c = mysqli_real_escape_string($conn, $_POST['content']);
+    $imgName = $_FILES['image']['name'];
+    $tmpName = $_FILES['image']['tmp_name'];
+
+    if($imgName){
+        move_uploaded_file($tmpName, "uploads/".$imgName);
     }
+
+    mysqli_query($conn, "INSERT INTO posts (title, content, image) VALUES ('$t', '$c', '$imgName')");
+    header("Location: index.php");
 }
 ?>
+</body>
+</html>
