@@ -33,15 +33,11 @@ if(!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
     </div>
 </div>
 
-<?php
-if(isset($_POST['submit'])){
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $content = mysqli_real_escape_string($conn, $_POST['content']);
-    
-    $sql = "INSERT INTO posts (title, content) VALUES ('$title', '$content')";
-    if(mysqli_query($conn, $sql)){
-        echo "<script>alert('Post Created Successfully!'); window.location='index.php';</script>";
-    }
+<?php include('db.php'); 
+if(isset($_POST['add'])){
+    $t = $_POST['title']; $c = $_POST['content'];
+    mysqli_query($conn, "INSERT INTO posts (title, content) VALUES ('$t', '$c')");
+    header("Location: index.php");
 }
 ?>
 </body>
