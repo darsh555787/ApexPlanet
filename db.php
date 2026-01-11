@@ -1,5 +1,4 @@
 <?php
-// Only start session if one doesn't exist already
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -10,9 +9,10 @@ $pass = "";
 $dbname = "blog";
 $port = 3307;
 
-$conn = mysqli_connect($host, $user, $pass, $dbname, $port);
+// Object-oriented connection
+$conn = new mysqli($host, $user, $pass, $dbname, $port);
 
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 ?>

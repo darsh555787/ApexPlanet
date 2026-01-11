@@ -1,4 +1,32 @@
-<?php include('db.php'); ?>
+<?php 
+include('db.php'); 
+
+if(isset($_POST['login'])){
+    // 1. Form Validation (Server-side)
+    $user_input = trim($_POST['username']);
+    $pass_input = $_POST['password'];
+
+    // 2. Prepared Statement (Requirement: Prevent SQL Injection)
+    $stmt = $conn->prepare("SELECT id, username, password, role FROM users WHERE username = ?");
+    $stmt->bind_param("s", $user_input);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    // 3. Secure Verification
+    if($row && password_verify($pass_input, $row['password'])) {
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['user'] = $row['username'];
+        $_SESSION['role'] = $row['role']; // Store role for permissions
+        header("Location: index.php");
+        exit();
+    } else {
+        echo "<script>alert('Invalid Credentials');</script>";
+    }
+    $stmt->close();
+}
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,19 +54,3 @@
     </div>
 </body>
 </html>
-
-<?php
-if(isset($_POST['login'])){
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
-    $result = mysqli_query($conn, "SELECT * FROM users WHERE username='$user'");
-    $row = mysqli_fetch_assoc($result);
-    
-    if($row && password_verify($pass, $row['password'])) {
-        $_SESSION['user'] = $row['username']; // Requirement: Session Management
-        header("Location: index.php");
-    } else {
-        echo "<script>alert('Invalid Credentials');</script>";
-    }
-}
-?>

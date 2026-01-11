@@ -1,4 +1,12 @@
-<?php include('db.php'); ?>
+<?php 
+include('db.php'); 
+
+// Check if user is logged in
+if(!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,9 +24,14 @@
     <div class="row justify-content-center">
         <div class="col-md-6 card p-4 shadow-sm create-card">
             <h4 class="mb-4 fw-bold">Share an Update</h4>
+            
             <form method="POST" enctype="multipart/form-data">
-                <input type="text" name="title" class="form-control mb-3" placeholder="Title" required>
-                <textarea name="content" class="form-control mb-3" rows="4" placeholder="What's on your mind?" required></textarea>
+                <div class="mb-3">
+                    <input type="text" name="title" class="form-control" placeholder="Title" required>
+                </div>
+                <div class="mb-3">
+                    <textarea name="content" class="form-control" rows="4" placeholder="What's on your mind?" required></textarea>
+                </div>
                 
                 <label class="form-label text-secondary small">Add a Photo</label>
                 <input type="file" name="image" class="form-control mb-4" accept="image/*">
@@ -33,21 +46,38 @@
 
 <?php
 if(isset($_POST['post'])){
-    $t = mysqli_real_escape_string($conn, $_POST['title']);
-    $c = mysqli_real_escape_string($conn, $_POST['content']);
-    
-    // Handling the Image Upload
-    $imgName = $_FILES['image']['name'];
-    $tmpName = $_FILES['image']['tmp_name'];
+    // 1. Server-side Validation (Task 4 Requirement)
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
+    $errors = [];
 
-    if($imgName){
-        // Move the file from temporary storage to your 'uploads' folder
-        move_uploaded_file($tmpName, "uploads/".$imgName);
-    }
+    if(empty($title)) { $errors[] = "Title is required."; }
+    if(strlen($content) < 5) { $errors[] = "Content is too short."; }
 
-    $sql = "INSERT INTO posts (title, content, image) VALUES ('$t', '$c', '$imgName')";
-    if(mysqli_query($conn, $sql)){
-        echo "<script>window.location='index.php';</script>";
+    if(empty($errors)) {
+        // Handling the Image Upload
+        $imgName = !empty($_FILES['image']['name']) ? $_FILES['image']['name'] : null;
+        $tmpName = $_FILES['image']['tmp_name'];
+
+        if($imgName){
+            move_uploaded_file($tmpName, "uploads/".$imgName);
+        }
+
+        // 2. Prepared Statements (Task 4 Requirement: Prevent SQL Injection)
+        $stmt = $conn->prepare("INSERT INTO posts (title, content, image) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $title, $content, $imgName);
+        
+        if($stmt->execute()){
+            echo "<script>window.location='index.php';</script>";
+        } else {
+            echo "<div class='alert alert-danger mt-3'>Error: " . $conn->error . "</div>";
+        }
+        $stmt->close();
+    } else {
+        // Display validation errors
+        foreach($errors as $err) {
+            echo "<script>alert('$err');</script>";
+        }
     }
 }
 ?>
