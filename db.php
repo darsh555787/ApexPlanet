@@ -1,14 +1,22 @@
 <?php
-$host = "127.0.0.1:3307"; // This forces the connection to use port 3307
+// 1. Force errors to show on screen
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+echo "<h1>PHP is working!</h1>"; // If you see this, PHP is fine.
+
+$host = "127.0.0.1:3307"; 
 $user = "root";
-$pass = "";               // Empty password as shown in your phpMyAdmin
+$pass = ""; 
 $dbname = "blog";
 
-// Create connection
+// 2. Try to connect
 $conn = mysqli_connect($host, $user, $pass, $dbname);
 
-// Check connection
+// 3. Check connection
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    die("<b style='color:red'>Database Connection Failed:</b> " . mysqli_connect_error());
+} else {
+    echo "<b style='color:green'>Success! Database is connected.</b>";
 }
 ?>
