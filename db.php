@@ -1,5 +1,9 @@
 <?php
-session_start();
+// Only start session if one doesn't exist already
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $host = "127.0.0.1";
 $user = "root";
 $pass = "";
